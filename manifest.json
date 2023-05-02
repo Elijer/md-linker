@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Markdown Linker",
+  "description": "A simple utility that allows you to copy text as a markdowd hyperlinked to the source.",
+  "version": "1.0",
+  "icons": {
+    "16": "images/icon16.png",
+    "32": "images/icon32.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "scripts/content.js"
+      ],
+      "matches": [
+        "https://developer.chrome.com/docs/extensions/*",
+        "https://developer.chrome.com/docs/webstore/*",
+        "https://www.google.com/*",
+        "https://*/*"
+      ],
+      "css": ["main.css"]
+    }
+  ]
+}
