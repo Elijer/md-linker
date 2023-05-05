@@ -1,3 +1,38 @@
-/* html body {
-    background: green;
-} */
+#copy-splash {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 300;
+    padding: 10px;
+    background: rgb(255, 153, 64);
+    color: white;
+    box-shadow: 3px 3px .4 black;
+    border-radius: 8px;
+    margin-left:auto;
+    margin-right:auto;
+    z-index: 99999999; 
+}
+
+.hideMe {
+
+    opacity: 1;
+    
+    animation:signup-response 1s 1;
+    -webkit-animation:signup-response 1s 1;
+    animation-fill-mode: forwards;
+    
+    animation-delay:2s;
+    -webkit-animation-delay:1s; /* Safari and Chrome */
+    -webkit-animation-fill-mode: forwards;
+    
+} 
+
+@keyframes signup-response{
+    from {opacity :1;}
+    to {opacity :0;}
+}
+
+@-webkit-keyframes signup-response{
+    from {opacity :1;}
+    to {opacity :0;}
+}
