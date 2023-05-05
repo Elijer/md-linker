@@ -12,7 +12,7 @@
   "content_scripts": [
     {
       "js": [
-        "scripts/content.js"
+        "main.js"
       ],
       "matches": [
         "https://developer.chrome.com/docs/extensions/*",
