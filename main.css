@@ -4,7 +4,7 @@
     right: 10px;
     font-size: 300;
     padding: 10px;
-    background: rgb(255, 153, 64);
+    background: rgb(36, 186, 129);
     color: white;
     box-shadow: 3px 3px .4 black;
     border-radius: 8px;
@@ -16,7 +16,7 @@
 .hideMe {
 
     opacity: 1;
-    
+
     animation:signup-response 1s 1;
     -webkit-animation:signup-response 1s 1;
     animation-fill-mode: forwards;
