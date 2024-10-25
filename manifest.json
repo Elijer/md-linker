@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Markdown Linker",
   "description": "A simple utility that allows you to copy text as a markdown hyperlinked to the source using the hotkeys Shift⇧ + Command⌘ + Period.",
-  "version": "1.0",
+  "version": "1.1",
   "icons": {
     "16": "images/icon16.png",
     "32": "images/icon32.png",
