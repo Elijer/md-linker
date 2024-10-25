@@ -12,7 +12,6 @@ const initiateMarkdownCopy = (text) => {
 const showMessage = (msg, classThing='--') => {
   const copySplash = document.createElement("div");
   copySplash.classList.add("copy-splash")
-  copySplash.classList.add("rich-text")
   copySplash.classList.add(classThing)
   copySplash.classList.add("hideMe")
   copySplash.innerHTML = msg
@@ -94,7 +93,7 @@ document.addEventListener('keydown', (event) => {
           // Copy link to clipboard as Markdown
           try{
             navigator.clipboard.writeText(`[${selectedText}](${window.location.href})`)
-            showMessage('Copied MD link to clipboard! 😎')
+            showMessage('Copied MD link to clipboard! 😎', 'md-text')
           } catch {
             showMessage('Problem copying markdown link', 'copy-error')
           }
