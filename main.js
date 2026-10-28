@@ -36,11 +36,12 @@ const showMessage = (msg, classThing = "--") => {
 };
 
 // Function to copy rich text with link using execCommand (legacy method)
-function copyRichTextLegacy(text) {
+function copyRichTextLegacy(text, href = window.location.href) {
   // Create temp link element
   const link = document.createElement("a");
-  link.href = window.location.href;
+  link.href = href;
   link.textContent = text;
+  document.body.appendChild(link);
 
   // Select the content
   const range = document.createRange();
@@ -58,14 +59,17 @@ function copyRichTextLegacy(text) {
 
   // Clean up
   selection.removeAllRanges();
-  document.body.removeChild(tempDiv);
+  document.body.removeChild(link);
 }
 
 // Function to copy rich text using the modern Clipboard API
-async function copyRichTextModern(text) {
+async function copyRichTextModern(text, href = window.location.href) {
   try {
     // Create HTML content with the link
-    const htmlContent = `<a href="${window.location.href}">${text}</a>`;
+    const link = document.createElement("a");
+    link.href = href;
+    link.textContent = text;
+    const htmlContent = link.outerHTML;
 
     // Create clipboard data
     const clipboardItem = new ClipboardItem({
@@ -78,23 +82,34 @@ async function copyRichTextModern(text) {
   } catch (err) {
     showMessage("Problem copying rich text link with method #1");
     // Fallback to legacy method
-    copyRichTextLegacy(text);
+    copyRichTextLegacy(text, href);
   }
 }
 
 // Main function that tries modern method first, falls back to legacy
-function copyAsRichText(text) {
+function copyAsRichText(text, href = window.location.href) {
   // Check if modern Clipboard API is supported
   if (navigator.clipboard && window.ClipboardItem) {
-    copyRichTextModern(text);
+    copyRichTextModern(text, href);
   } else {
-    copyRichTextLegacy(text);
+    copyRichTextLegacy(text, href);
   }
+}
+
+// Visible text of a link, falling back to labels or the url itself (e.g. image links)
+function getLinkText(link) {
+  const text = link.innerText.trim().replace(/\s+/g, " ");
+  return text || link.getAttribute("aria-label") || link.title || link.href;
 }
 
 // --------------------------- LISTENERS ------------------------------------
 
 let selectedText = "";
+let hoveredLink = null;
+
+document.addEventListener("mouseover", (event) => {
+  hoveredLink = event.target.closest ? event.target.closest("a[href]") : null;
+});
 
 document.addEventListener("mouseup", (event) => {
   selectedText = window.getSelection().toString();
@@ -103,6 +118,23 @@ document.addEventListener("mouseup", (event) => {
 document.addEventListener(
   "keydown",
   (event) => {
+    // Ctrl + Option + C / X while hovering a link. Uses event.code since
+    // Option changes event.key on macOS (e.g. Option+C produces "ç").
+    if (event.ctrlKey && event.altKey && !event.metaKey && hoveredLink) {
+      if (event.code === "KeyC") {
+        event.preventDefault();
+        copyAsRichText(getLinkText(hoveredLink), hoveredLink.href);
+      }
+
+      if (event.code === "KeyX") {
+        event.preventDefault();
+        navigator.clipboard
+          .writeText(hoveredLink.href)
+          .then(() => showMessage("Copied link URL to clipboard!", "md-text"))
+          .catch(() => showMessage("Problem copying link URL", "copy-error"));
+      }
+    }
+
     if (
       event.key === "." &&
       event.shiftKey === true &&
