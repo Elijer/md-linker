@@ -35,6 +35,18 @@ const showMessage = (msg, classThing = "--") => {
   document.body.appendChild(copySplash);
 };
 
+// Small notice that pops up from the cursor, used by the hover-link hotkeys
+const showCursorMessage = (msg, classThing = "--") => {
+  const splash = document.createElement("div");
+  splash.classList.add("cursor-splash");
+  splash.classList.add(classThing);
+  splash.textContent = msg;
+  splash.style.left = `${mouseX}px`;
+  splash.style.top = `${mouseY}px`;
+  splash.addEventListener("animationend", () => splash.remove());
+  document.body.appendChild(splash);
+};
+
 // Function to copy rich text with link using execCommand (legacy method)
 function copyRichTextLegacy(text, href = window.location.href) {
   // Create temp link element
@@ -50,16 +62,15 @@ function copyRichTextLegacy(text, href = window.location.href) {
   selection.removeAllRanges();
   selection.addRange(range);
 
+  let copied = false;
   try {
-    document.execCommand("copy");
-    showMessage("Rich text successfully copied!");
-  } catch (err) {
-    showMessage("failed to copy rich text link", "copy-error");
-  }
+    copied = document.execCommand("copy");
+  } catch (err) {}
 
   // Clean up
   selection.removeAllRanges();
   document.body.removeChild(link);
+  return copied;
 }
 
 // Function to copy rich text using the modern Clipboard API
@@ -78,22 +89,21 @@ async function copyRichTextModern(text, href = window.location.href) {
     });
 
     await navigator.clipboard.write([clipboardItem]);
-    showMessage("Rich text successfully copied!");
+    return true;
   } catch (err) {
-    showMessage("Problem copying rich text link with method #1");
     // Fallback to legacy method
-    copyRichTextLegacy(text, href);
+    return copyRichTextLegacy(text, href);
   }
 }
 
-// Main function that tries modern method first, falls back to legacy
-function copyAsRichText(text, href = window.location.href) {
+// Main function that tries modern method first, falls back to legacy.
+// Resolves to whether the copy succeeded.
+async function copyAsRichText(text, href = window.location.href) {
   // Check if modern Clipboard API is supported
   if (navigator.clipboard && window.ClipboardItem) {
-    copyRichTextModern(text, href);
-  } else {
-    copyRichTextLegacy(text, href);
+    return copyRichTextModern(text, href);
   }
+  return copyRichTextLegacy(text, href);
 }
 
 // Visible text of a link, falling back to labels or the url itself (e.g. image links)
@@ -106,6 +116,13 @@ function getLinkText(link) {
 
 let selectedText = "";
 let hoveredLink = null;
+let mouseX = 0;
+let mouseY = 0;
+
+document.addEventListener("mousemove", (event) => {
+  mouseX = event.clientX;
+  mouseY = event.clientY;
+});
 
 document.addEventListener("mouseover", (event) => {
   hoveredLink = event.target.closest ? event.target.closest("a[href]") : null;
@@ -123,15 +140,19 @@ document.addEventListener(
     if (event.ctrlKey && event.altKey && !event.metaKey && hoveredLink) {
       if (event.code === "KeyC") {
         event.preventDefault();
-        copyAsRichText(getLinkText(hoveredLink), hoveredLink.href);
+        copyAsRichText(getLinkText(hoveredLink), hoveredLink.href).then((ok) =>
+          ok
+            ? showCursorMessage("Copied rich-text link!")
+            : showCursorMessage("Problem copying link", "copy-error")
+        );
       }
 
       if (event.code === "KeyX") {
         event.preventDefault();
         navigator.clipboard
           .writeText(hoveredLink.href)
-          .then(() => showMessage("Copied link URL to clipboard!", "md-text"))
-          .catch(() => showMessage("Problem copying link URL", "copy-error"));
+          .then(() => showCursorMessage("Copied link!"))
+          .catch(() => showCursorMessage("Problem copying link", "copy-error"));
       }
     }
 
@@ -159,7 +180,11 @@ document.addEventListener(
       event.metaKey === true
     ) {
       if (selectedText.length > 1) {
-        copyAsRichText(selectedText);
+        copyAsRichText(selectedText).then((ok) =>
+          ok
+            ? showMessage("Rich text successfully copied!")
+            : showMessage("failed to copy rich text link", "copy-error")
+        );
       }
     }
 
